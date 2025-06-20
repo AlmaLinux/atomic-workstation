@@ -10,7 +10,6 @@ concurrency:
 
 jobs:
   set-env:
-    if: github.repository != 'AlmaLinux/atomic-respin-template'
     runs-on: ubuntu-latest
     outputs:
       LATEST_TAG: ${{ steps.set.outputs.LATEST_TAG }}
@@ -28,12 +27,10 @@ jobs:
       - name: Set environment variables
         uses: ./.github/actions/config
         id: set
-        with:
-          SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}
 
   build-iso:
     name: Build ISO
-    needs: [set-env]
+    needs: set-env
     uses: AlmaLinux/atomic-ci/.github/workflows/build-iso.yml@v6
     with:
       image-name: "${{ needs.set-env.outputs.IMAGE_NAME }}"
@@ -44,10 +41,15 @@ jobs:
       platforms: ${{ needs.set-env.outputs.PLATFORMS }}
       REGISTRY: ${{ needs.set-env.outputs.REGISTRY }}
       REGISTRY_USER: ${{ needs.set-env.outputs.REGISTRY_USER }}
+      upload-to-github: false
       upload-to-cloudflare: false
-      # bucket: ${{ secrets.R2_BUCKET }}
+      upload-to-s3: true
+      bucket: "almalinux-atomic"
+      aws-default-region: "us-east-1"
     secrets:
-      REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-      # ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-      # SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      REGISTRY_TOKEN: ${{ secrets.QUAY_PASSWORD }}
+      AWS_ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/SIG_Atomic_GHA
+    permissions:
+      id-token: write
+      contents: read
+      packages: write
