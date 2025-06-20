@@ -1,0 +1,118 @@
+---
+# ba0fde3d-bee7-4307-b97b-17d0d20aff50
+name: Build image
+on:
+  pull_request:
+  push:
+    branches:
+      - 'main'
+    paths-ignore:
+      - '**/README.md'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  set-env:
+    if: github.repository != 'AlmaLinux/atomic-respin-template'
+    runs-on: ubuntu-latest
+    outputs:
+      LATEST_TAG: ${{ steps.set.outputs.LATEST_TAG }}
+      REGISTRY: ${{ steps.set.outputs.REGISTRY }}
+      REGISTRY_USER: ${{ steps.set.outputs.REGISTRY_USER }}
+      PLATFORMS: ${{ steps.set.outputs.PLATFORMS }}
+      IMAGE_PATH: ${{ steps.set.outputs.IMAGE_PATH }}
+      IMAGE_NAME: ${{ steps.set.outputs.IMAGE_NAME }}
+      IMAGE_REF: ${{ steps.set.outputs.IMAGE_REF }}
+      IS_SIGNED: ${{ steps.set.outputs.IS_SIGNED }}
+    steps:
+      - name: Checkout github actions
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Set environment variables
+        uses: ./.github/actions/config
+        id: set
+        with:
+          SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}
+
+  build-image:
+    name: Build image
+    uses: AlmaLinux/atomic-ci/.github/workflows/build-image.yml@v6
+    needs: set-env
+    with:
+      containerfile: Dockerfile
+      image-name: "${{ needs.set-env.outputs.IMAGE_NAME }}"
+      previous-image: "${{ needs.set-env.outputs.IMAGE_REF }}:latest"
+      upstream-public-key: atomic-desktop.pub
+      platforms: ${{ needs.set-env.outputs.PLATFORMS }}
+      skip-maximize-build-space: true
+      image-path: ${{ needs.set-env.outputs.IMAGE_PATH }}
+      REGISTRY: ${{ needs.set-env.outputs.REGISTRY }}
+      REGISTRY_USER: ${{ needs.set-env.outputs.REGISTRY_USER }}
+    secrets:
+      REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+  test-image:
+    name: Test image
+    runs-on: ubuntu-latest
+    needs: [set-env, build-image]
+
+    env:
+      IMAGE_REF: "${{ needs.build-image.outputs.image-ref }}@${{ needs.build-image.outputs.digest }}"
+
+    steps:
+      - name: Login to Container Registry
+        run: echo ${{ secrets.GITHUB_TOKEN }} | podman login -u ${{ needs.set-env.outputs.REGISTRY_USER }} --password-stdin ${{ needs.set-env.outputs.REGISTRY }}
+
+      - name: Test container
+        run: |
+          # Create a short script to test the image using heredoc
+          cat << 'EOF' > /tmp/test.sh
+          set -ex
+
+          cat /etc/os-release
+          bootc -V
+          EOF
+
+          podman run --rm \
+            -v /tmp/test.sh:/tmp/test.sh \
+            ${{ env.IMAGE_REF }} \
+            /bin/bash /tmp/test.sh
+
+  promote-image:
+    name: Promote image
+    needs: [set-env, build-image, test-image]
+    if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+    uses: AlmaLinux/atomic-ci/.github/workflows/retag-image.yml@v6
+    with:
+      image: ${{ needs.build-image.outputs.image-ref }}@${{ needs.build-image.outputs.digest }}
+      tag: |
+        ${{ needs.set-env.outputs.LATEST_TAG }}
+        ${{ needs.build-image.outputs.redhat-version-id }}
+        ${{ needs.build-image.outputs.version }}
+      REGISTRY: ${{ needs.set-env.outputs.REGISTRY }}
+      REGISTRY_USER: ${{ needs.set-env.outputs.REGISTRY_USER }}
+    secrets:
+      REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      packages: write
+
+  create-release:
+    name: Create Release
+    needs: [set-env, build-image, test-image, promote-image]
+    if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+    uses: AlmaLinux/atomic-ci/.github/workflows/create-release.yml@v6
+    with:
+      image-name: "${{ needs.set-env.outputs.IMAGE_NAME }}"
+      version: ${{ needs.build-image.outputs.version }}
+      pretty-version: ${{ needs.build-image.outputs.redhat-version-id }}
+      latest-image-ref: "${{ needs.build-image.outputs.image-ref }}:${{ needs.set-env.outputs.LATEST_TAG }}"
+    permissions:
+      contents: write

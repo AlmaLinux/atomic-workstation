@@ -1,0 +1,53 @@
+---
+# ba0fde3d-bee7-4307-b97b-17d0d20aff50
+name: Build ISO
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  set-env:
+    if: github.repository != 'AlmaLinux/atomic-respin-template'
+    runs-on: ubuntu-latest
+    outputs:
+      LATEST_TAG: ${{ steps.set.outputs.LATEST_TAG }}
+      REGISTRY: ${{ steps.set.outputs.REGISTRY }}
+      REGISTRY_USER: ${{ steps.set.outputs.REGISTRY_USER }}
+      PLATFORMS: ${{ steps.set.outputs.PLATFORMS }}
+      IMAGE_PATH: ${{ steps.set.outputs.IMAGE_PATH }}
+      IMAGE_NAME: ${{ steps.set.outputs.IMAGE_NAME }}
+      IMAGE_REF: ${{ steps.set.outputs.IMAGE_REF }}
+      IS_SIGNED: ${{ steps.set.outputs.IS_SIGNED }}
+    steps:
+      - name: Checkout github actions
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Set environment variables
+        uses: ./.github/actions/config
+        id: set
+        with:
+          SIGNING_SECRET: ${{ secrets.SIGNING_SECRET }}
+
+  build-iso:
+    name: Build ISO
+    needs: [set-env]
+    uses: AlmaLinux/atomic-ci/.github/workflows/build-iso.yml@v6
+    with:
+      image-name: "${{ needs.set-env.outputs.IMAGE_NAME }}"
+      image: "${{ needs.set-env.outputs.IMAGE_REF }}:${{ needs.set-env.outputs.LATEST_TAG }}"
+      update_origin_ref: "${{ needs.set-env.outputs.IMAGE_REF }}:${{ needs.set-env.outputs.LATEST_TAG }}"
+      update_is_signed: ${{ needs.set-env.outputs.IS_SIGNED == 'true' }}
+      config-file: ./iso.toml
+      platforms: ${{ needs.set-env.outputs.PLATFORMS }}
+      REGISTRY: ${{ needs.set-env.outputs.REGISTRY }}
+      REGISTRY_USER: ${{ needs.set-env.outputs.REGISTRY_USER }}
+      upload-to-cloudflare: false
+      # bucket: ${{ secrets.R2_BUCKET }}
+    secrets:
+      REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      # ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      # SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
