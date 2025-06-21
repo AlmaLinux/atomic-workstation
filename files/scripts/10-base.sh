@@ -17,10 +17,23 @@ dnf install -y \
 	libcamera{,-{v4l2,gstreamer,tools}} \
     jetbrains-mono-fonts-all
 
+# Set up repo for Visual Studio Code
+rpm --import https://packages.microsoft.com/keys/microsoft.asc
+cat << 'EOF' >> /etc/yum.repos.d/vscode.repo
+# Visual Studio Code repository
+[code]
+name=Visual Studio Code
+baseurl=https://packages.microsoft.com/yumrepos/vscode
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc
+EOF
+
 # Now let's go for the main packages
 dnf -y install \
     distrobox \
-    buildah
+    buildah \
+    code
 
 systemctl enable rpm-ostree-countme.service
 

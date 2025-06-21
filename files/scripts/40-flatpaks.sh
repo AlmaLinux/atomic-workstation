@@ -10,6 +10,5 @@ io.github.flattool.Warehouse
 com.google.Chrome
 org.mozilla.Thunderbird
 io.github.dvlv.boxbuddyrs
-com.visualstudio.code
 org.libreoffice.LibreOffice
 EOF
