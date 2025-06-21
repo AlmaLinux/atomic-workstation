@@ -2,10 +2,26 @@
 
 set -xeuo pipefail
 
-# Start customizing your image here
+# Get rid of some stuff we don't need
+dnf autoremove -y \
+    PackageKit
 
-# Examples:
-# dnf install -y 'dnf-command(config-manager)'
-# dnf config-manager --set-enabled crb
+# Start installing utilities and tools
+dnf install -y \
+    gnome-shell-extension-{appindicator,dash-to-dock,blur-my-shell} \
+    ncdu \
+    powertop \
+    fastfetch \
+	systemd-{resolved,container,oomd} \
+	libcamera{,-{v4l2,gstreamer,tools}} \
+    jetbrains-mono-fonts-all
 
-echo "Hello, Atomic AlmaLinux respin world!."
+# Now let's go for the main packages
+dnf -y install \
+    distrobox \
+    buildah
+
+systemctl enable rpm-ostree-countme.service
+
+# Enable polkit rules for fingerprint sensors via fprintd
+authselect enable-feature with-fingerprint
