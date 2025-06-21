@@ -11,6 +11,7 @@ dnf install -y \
     gnome-shell-extension-{appindicator,dash-to-dock,blur-my-shell} \
     ncdu \
     powertop \
+    htop \
     fastfetch \
 	systemd-{resolved,container,oomd} \
 	libcamera{,-{v4l2,gstreamer,tools}} \
