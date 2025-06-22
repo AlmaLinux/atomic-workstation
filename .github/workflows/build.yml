@@ -10,6 +10,10 @@ on:
       - '**/README.md'
   workflow_dispatch:
 
+  schedule:
+    # run on Saturday at 10:00 UTC
+    - cron: '0 10 * * 6'
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
   cancel-in-progress: true
@@ -34,10 +38,38 @@ jobs:
         uses: ./.github/actions/config
         id: set
 
+  check-update:
+    name: Check for updates
+    if: github.event_name == 'schedule'
+    needs: set-env
+    runs-on: ubuntu-latest
+    outputs:
+      res: ${{ steps.check-update.outputs.res }}
+    steps:
+      - name: Log in to registry
+        shell: bash
+        run: podman login ${{ needs.set-env.outputs.REGISTRY }} -u ${{ needs.set-env.outputs.REGISTRY_USER }} -p ${{ secrets.QUAY_PASSWORD }}
+
+      - name: Check update
+        id: check-update
+        shell: bash
+        run: |
+          # 'dnf check-update'
+          # exit codes:
+          #   0 - no updates
+          #   100 - updates available
+          #   125 - tag/platform not found
+          #   127 - command not found
+          res=0
+          podman run --quiet --rm ${{ needs.set-env.outputs.IMAGE_REF }}:latest dnf check-update || res=$?
+          echo "res=${res}" >> "$GITHUB_OUTPUT"
+          echo "Exit code: '$res'"
+
   build-image:
     name: Build image
     uses: AlmaLinux/atomic-ci/.github/workflows/build-image.yml@v6
-    needs: set-env
+    needs: [set-env, check-update]
+    if: ${{ !failure() && !cancelled() && (github.event_name != 'schedule' || needs.check-update.outputs.res != 0) }}
     with:
       containerfile: Dockerfile
       image-name: "${{ needs.set-env.outputs.IMAGE_NAME }}"
@@ -63,7 +95,8 @@ jobs:
   test-image:
     name: Test image
     runs-on: ubuntu-latest
-    needs: [set-env, build-image]
+    needs: [set-env, check-update, build-image]
+    if: ${{ !failure() && !cancelled() && (github.event_name != 'schedule' || needs.check-update.outputs.res != 0) }}
 
     env:
       IMAGE_REF: "${{ needs.build-image.outputs.image-ref }}@${{ needs.build-image.outputs.digest }}"
@@ -89,8 +122,8 @@ jobs:
 
   promote-image:
     name: Promote image
-    needs: [set-env, build-image, test-image]
-    if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+    needs: [set-env, check-update, build-image, test-image]
+    if: ${{ !failure() && !cancelled() && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && (github.event_name != 'schedule' || needs.check-update.outputs.res != 0) }}
     uses: AlmaLinux/atomic-ci/.github/workflows/retag-image.yml@v6
     with:
       image: ${{ needs.build-image.outputs.image-ref }}@${{ needs.build-image.outputs.digest }}
@@ -108,8 +141,8 @@ jobs:
 
   create-release:
     name: Create Release
-    needs: [set-env, build-image, test-image, promote-image]
-    if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+    needs: [set-env, check-update, build-image, test-image, promote-image]
+    if: ${{ !failure() && !cancelled() && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && (github.event_name != 'schedule' || needs.check-update.outputs.res != 0) }}
     uses: AlmaLinux/atomic-ci/.github/workflows/create-release.yml@v6
     with:
       image-name: "${{ needs.set-env.outputs.IMAGE_NAME }}"
