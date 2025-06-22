@@ -48,6 +48,7 @@ jobs:
       image-path: ${{ needs.set-env.outputs.IMAGE_PATH }}
       REGISTRY: ${{ needs.set-env.outputs.REGISTRY }}
       REGISTRY_USER: ${{ needs.set-env.outputs.REGISTRY_USER }}
+      image-description: "AlmaLinux Atomic Workstation"
       KMS_KEY_ID: SIG_Atomic_Container_Signing_GH_CI
       AWS_REGION: us-east-1
       generate-sbom: false
