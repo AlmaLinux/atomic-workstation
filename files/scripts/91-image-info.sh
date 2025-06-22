@@ -4,10 +4,16 @@
 
 set -xeuo pipefail
 
-# This may help us get some usage stats through countme data.
-
-# Remove current VARIANT_ID, if it exists.
-sed -i '/VARIANT_ID=/d;' /usr/lib/os-release
+VERSION_ID="$(sh -c '. /usr/lib/os-release ; echo $VERSION_ID')"
+IMAGE_PRETTY_NAME="AlmaLinux Atomic Workstation"
 
 # Add our image name as VARIANT_ID.
-echo "VARIANT_ID=\"${IMAGE_NAME}\"" >> /usr/lib/os-release
+# This may help us get some usage stats through countme data.
+sed -i -f - /usr/lib/os-release <<EOF
+s/^NAME=.*/NAME=\"${IMAGE_PRETTY_NAME}\"/
+s/^PRETTY_NAME=.*/PRETTY_NAME=\"${IMAGE_PRETTY_NAME} ${VERSION_ID}\"/
+
+/^VARIANT_ID=/d
+\$a\
+VARIANT_ID=\"${IMAGE_NAME}\"
+EOF
