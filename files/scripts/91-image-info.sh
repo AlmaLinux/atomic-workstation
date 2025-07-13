@@ -9,6 +9,7 @@ IMAGE_PRETTY_NAME="AlmaLinux Atomic Workstation"
 
 # Add our image name as VARIANT_ID.
 # This may help us get some usage stats through countme data.
+cat /usr/lib/os-release
 sed -i -f - /usr/lib/os-release <<EOF
 s/^NAME=.*/NAME=\"${IMAGE_PRETTY_NAME}\"/
 s/^PRETTY_NAME=.*/PRETTY_NAME=\"${IMAGE_PRETTY_NAME} ${VERSION_ID}\"/
@@ -17,3 +18,4 @@ s/^PRETTY_NAME=.*/PRETTY_NAME=\"${IMAGE_PRETTY_NAME} ${VERSION_ID}\"/
 \$a\
 VARIANT_ID=\"${IMAGE_NAME}\"
 EOF
+cat /usr/lib/os-release
