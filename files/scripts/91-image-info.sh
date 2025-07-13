@@ -13,9 +13,6 @@ cat /usr/lib/os-release
 sed -i -f - /usr/lib/os-release <<EOF
 s/^NAME=.*/NAME=\"${IMAGE_PRETTY_NAME}\"/
 s/^PRETTY_NAME=.*/PRETTY_NAME=\"${IMAGE_PRETTY_NAME} ${VERSION_ID}\"/
-
-/^VARIANT_ID=/d
-\$a\
-VARIANT_ID=\"${IMAGE_NAME}\"
+s/^VARIANT_ID=.*/VARIANT_ID=\"${IMAGE_NAME}\"/
 EOF
 cat /usr/lib/os-release
