@@ -12,3 +12,8 @@ org.mozilla.Thunderbird
 io.github.dvlv.boxbuddyrs
 org.libreoffice.LibreOffice
 EOF
+
+# Remove system Flatpaks
+cat << 'EOF' >> /etc/flatpak/default-flatpaks/system/remove
+org.gnome.Extensions
+EOF
