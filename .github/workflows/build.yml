@@ -67,7 +67,7 @@ jobs:
 
   build-image:
     name: Build image
-    uses: AlmaLinux/atomic-ci/.github/workflows/build-image.yml@v6
+    uses: AlmaLinux/atomic-ci/.github/workflows/build-image.yml@v7
     needs: [set-env, check-update]
     if: ${{ !failure() && !cancelled() && (github.event_name != 'schedule' || needs.check-update.outputs.res != 0) }}
     with:
@@ -81,7 +81,7 @@ jobs:
       REGISTRY: ${{ needs.set-env.outputs.REGISTRY }}
       REGISTRY_USER: ${{ needs.set-env.outputs.REGISTRY_USER }}
       image-description: "AlmaLinux Atomic Workstation"
-      KMS_KEY_ID: SIG_Atomic_Container_Signing_GH_CI
+      KMS_KEY_ALIAS: SIG_Atomic_Container_Signing_GH_CI
       AWS_REGION: us-east-1
       generate-sbom: false
     secrets:
@@ -124,7 +124,7 @@ jobs:
     name: Promote image
     needs: [set-env, check-update, build-image, test-image]
     if: ${{ !failure() && !cancelled() && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && (github.event_name != 'schedule' || needs.check-update.outputs.res != 0) }}
-    uses: AlmaLinux/atomic-ci/.github/workflows/retag-image.yml@v6
+    uses: AlmaLinux/atomic-ci/.github/workflows/retag-image.yml@v7
     with:
       image: ${{ needs.build-image.outputs.image-ref }}@${{ needs.build-image.outputs.digest }}
       tag: |
@@ -143,7 +143,7 @@ jobs:
     name: Create Release
     needs: [set-env, check-update, build-image, test-image, promote-image]
     if: ${{ !failure() && !cancelled() && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && (github.event_name != 'schedule' || needs.check-update.outputs.res != 0) }}
-    uses: AlmaLinux/atomic-ci/.github/workflows/create-release.yml@v6
+    uses: AlmaLinux/atomic-ci/.github/workflows/create-release.yml@v7
     with:
       image-name: "${{ needs.set-env.outputs.IMAGE_NAME }}"
       version: ${{ needs.build-image.outputs.version }}
