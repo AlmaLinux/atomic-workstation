@@ -81,12 +81,12 @@ jobs:
       REGISTRY: ${{ needs.set-env.outputs.REGISTRY }}
       REGISTRY_USER: ${{ needs.set-env.outputs.REGISTRY_USER }}
       image-description: "AlmaLinux Atomic Workstation"
-      KMS_KEY_ALIAS: SIG_Atomic_Container_Signing_GH_CI
+      KMS_KEY_ALIAS: atomicsig
       AWS_REGION: us-east-1
       generate-sbom: false
     secrets:
       REGISTRY_TOKEN: ${{ secrets.QUAY_PASSWORD }}
-      AWS_ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/SIG_Atomic_GHA
+      AWS_ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/atomicimages
     permissions:
       contents: read
       packages: write
