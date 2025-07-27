@@ -14,7 +14,7 @@ Download and install from the ISO:
 
 Bootc image:
 * `quay.io/almalinuxorg/atomic-workstation`
-* Cosign public key: [cosign.pub](/cosign.pub)
+* Cosign public key: [atomic-desktop.pub](/atomic-desktop.pub)
 
 # Contributing
 
