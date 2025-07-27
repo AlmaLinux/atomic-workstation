@@ -35,7 +35,5 @@ dnf -y install \
     buildah \
     code
 
-systemctl enable rpm-ostree-countme.service
-
 # Enable polkit rules for fingerprint sensors via fprintd
 authselect enable-feature with-fingerprint
