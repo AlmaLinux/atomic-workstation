@@ -11,6 +11,7 @@ com.google.Chrome
 org.mozilla.Thunderbird
 io.github.dvlv.boxbuddyrs
 org.libreoffice.LibreOffice
+org.videolan.VLC
 EOF
 
 # Remove system Flatpaks
