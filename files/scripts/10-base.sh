@@ -14,7 +14,6 @@ dnf install -y \
     htop \
     fastfetch \
 	systemd-{resolved,container,oomd} \
-	libcamera{,-{v4l2,gstreamer,tools}} \
     jetbrains-mono-fonts-all
 
 # Set up repo for Visual Studio Code. Fix the code when Microsoft provides a key that doesn't use SHA1.
