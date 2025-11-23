@@ -67,7 +67,7 @@ jobs:
 
   build-image:
     name: Build image
-    uses: AlmaLinux/atomic-ci/.github/workflows/build-image.yml@v9
+    uses: AlmaLinux/atomic-ci/.github/workflows/build-image.yml@v10
     needs: [set-env, check-update]
     if: ${{ !failure() && !cancelled() && (github.event_name != 'schedule' || needs.check-update.outputs.res != 0) }}
     with:
