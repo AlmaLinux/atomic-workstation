@@ -7,7 +7,7 @@ COPY files/scripts /build_files/
 COPY *.pub /keys/
 
 # Base Image
-FROM quay.io/almalinuxorg/atomic-desktop-gnome:10@sha256:9b792f435669028c918d0a8b081739b566aaac435c67004246bfccc2a25bb374
+FROM quay.io/almalinuxorg/atomic-desktop-gnome:10@sha256:9595efff93b912d954f769af3b8c1048c0e5cb7ea46748c9eddef93c49b2a15f
 
 ARG IMAGE_NAME
 ARG IMAGE_REGISTRY
