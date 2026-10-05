@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   set-env:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     outputs:
       LATEST_TAG: ${{ steps.set.outputs.LATEST_TAG }}
       REGISTRY: ${{ steps.set.outputs.REGISTRY }}
@@ -42,7 +42,7 @@ jobs:
     name: Check for updates
     if: github.event_name == 'schedule'
     needs: set-env
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     outputs:
       res: ${{ steps.check-update.outputs.res }}
     steps:
@@ -94,7 +94,7 @@ jobs:
 
   test-image:
     name: Test image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: [set-env, check-update, build-image]
     if: ${{ !failure() && !cancelled() && (github.event_name != 'schedule' || needs.check-update.outputs.res != 0) }}
 
