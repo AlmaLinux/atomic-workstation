@@ -19,7 +19,6 @@ jobs:
       IMAGE_PATH: ${{ steps.set.outputs.IMAGE_PATH }}
       IMAGE_NAME: ${{ steps.set.outputs.IMAGE_NAME }}
       IMAGE_REF: ${{ steps.set.outputs.IMAGE_REF }}
-      IS_SIGNED: ${{ steps.set.outputs.IS_SIGNED }}
     steps:
       - name: Checkout github actions
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
@@ -35,9 +34,7 @@ jobs:
     with:
       image-name: "${{ needs.set-env.outputs.IMAGE_NAME }}"
       image: "${{ needs.set-env.outputs.IMAGE_REF }}:${{ needs.set-env.outputs.LATEST_TAG }}"
-      update_origin_ref: "${{ needs.set-env.outputs.IMAGE_REF }}:${{ needs.set-env.outputs.LATEST_TAG }}"
-      update_is_signed: ${{ needs.set-env.outputs.IS_SIGNED == 'true' }}
-      config-file: ./iso.toml
+      update-origin-ref: "${{ needs.set-env.outputs.IMAGE_REF }}:${{ needs.set-env.outputs.LATEST_TAG }}"
       platforms: ${{ needs.set-env.outputs.PLATFORMS }}
       REGISTRY: ${{ needs.set-env.outputs.REGISTRY }}
       REGISTRY_USER: ${{ needs.set-env.outputs.REGISTRY_USER }}
@@ -53,4 +50,4 @@ jobs:
     permissions:
       id-token: write
       contents: read
-      packages: write
+      packages: read

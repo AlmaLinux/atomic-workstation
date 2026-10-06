@@ -29,7 +29,6 @@ jobs:
       IMAGE_PATH: ${{ steps.set.outputs.IMAGE_PATH }}
       IMAGE_NAME: ${{ steps.set.outputs.IMAGE_NAME }}
       IMAGE_REF: ${{ steps.set.outputs.IMAGE_REF }}
-      IS_SIGNED: ${{ steps.set.outputs.IS_SIGNED }}
     steps:
       - name: Checkout github actions
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
@@ -175,7 +174,6 @@ jobs:
     with:
       image-name: "${{ needs.set-env.outputs.IMAGE_NAME }}"
       version: ${{ needs.build-image.outputs.version }}
-      pretty-version: ${{ needs.build-image.outputs.redhat-version-id }}
       latest-image-ref: "${{ needs.build-image.outputs.image-ref }}:${{ needs.set-env.outputs.LATEST_TAG }}"
     permissions:
       contents: write
