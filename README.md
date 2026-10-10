@@ -10,7 +10,7 @@ You can use it too to create your own custom Atomic AlmaLinux respin in minutes!
 # Usage
 
 Download and install from the ISO:
-* [atomic-workstation-amd64.iso](https://almalinux-atomic.s3-accelerate.dualstack.amazonaws.com/atomic-workstation/latest/atomic-workstation-amd64.iso)
+* [atomic-workstation-amd64.iso](https://almalinux-atomic.s3-accelerate.dualstack.amazonaws.com/atomic-workstation/latest/atomic-workstation-amd64.iso), [atomic-workstation-arm64.iso](https://almalinux-atomic.s3-accelerate.dualstack.amazonaws.com/atomic-workstation/latest/atomic-workstation-arm64.iso)
 
 Bootc image:
 * `quay.io/almalinuxorg/atomic-workstation`

@@ -1,5 +1,6 @@
 ---
 name: Set Environment Variables
+description: "Set environment variables for the build process"
 
 outputs:
   LATEST_TAG:
@@ -42,7 +43,7 @@ runs:
         REGISTRY_USER="almalinuxorg+airibarr_bot"
         IMAGE_PATH="almalinuxorg"
         IMAGE_NAME="atomic-workstation"
-        PLATFORMS="amd64"
+        PLATFORMS="amd64,arm64"
 
         echo "REGISTRY=${REGISTRY}" >> $GITHUB_OUTPUT
         echo "REGISTRY_USER=${REGISTRY_USER}" >> $GITHUB_OUTPUT
